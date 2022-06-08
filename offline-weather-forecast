@@ -1,0 +1,102 @@
+
+
+# Verifdate() - принимает пользовательский ввод и конвертирует его в вид строки для поиска в CSV.
+# результат - сформированная из пользовательского ввода строка для поиска в переменной "Gdate".
+def Verifdate():
+    global Gdate
+    dd = int(input("Введите день в формате dd:  "))
+    if 0 > dd > 31:
+        print(error)
+    if dd <= 9:
+        dd = "0" + str(dd)
+    mm = int(input("Введите месяц в формате mm:  "))
+    if 0 > mm > 12:
+        print(error)
+    if mm <= 9:
+        mm = "0" + str(mm)
+    print(str(dd) + "." + str(mm) + "." + "2022")
+    Gdate = (str(dd) + "." + str(mm) + "." + "2022")
+
+
+# VerifTime(x) - округляет введенное пользователем время до ближайшего значения в CSV
+# результат - округленное значение времени для Verifdate() в переменной "Gh".
+def VerifTime():
+    global Gh
+    time = input("введите время в формате hh:mm  ")
+    rez = time.find(":")
+    if rez == -1:
+        print("error")
+
+    h = time[rez - 2:rez]  # определяем часы
+    m = time[rez + 1:rez + 3]  # определяем минуты
+
+    if int(m) > 60:  # округляем минуты до часов
+        print("eroor")
+    if m != "00" and 30 < int(m) < 59:
+        h = int(h) + 1
+    elif m != "00" and 0 < int(m) < 30:
+        h = int(h)
+
+    if int(h) > 24:  # округляем часы до ближайшего значения имеющегося в таблице
+        print("error")
+    elif 0 < int(h) < 24 and int(h) % 3 == 1:
+        h = int(h) - 1
+    elif 0 < int(h) < 24 and int(h) % 3 == 2:
+        h = int(h) + 1
+    if int(h) == 0 or int(h) == 24:
+        h = "00"
+    if 0 < int(h) <= 9:
+        h = "0" + str(h)
+    Gh = str(h) + ":00"  # сохраняем время в приемлемом виде
+
+
+# read_data() - ищет все совпадения по дате и округленному значению времени в CSV.
+# результат - список температур на дату и время из пользовательского ввода в переменной "temp".
+def read_data(x):
+    srch = str(x)
+
+    st = 0
+    global temp
+    temp = []
+    with open('data.csv', 'r') as data:  # открываем файл на чтение
+        for line in data:  # читаем файл построчно
+            line = line.strip()  # очищаем каждую строку
+
+            tl = line.find(":")  # точка отсчета времени в базе
+            tr = srch.find(":")  # точка отсчета времени пользовательского ввода
+
+            t = line.find(";")  # точка начала отсчета температуры
+            t2 = line.find(",")  # точка окончания отсчета температуры
+            linet = (line[t + 1:t2])  # значение темпиратуры из строки
+
+            if line[0:5] == srch[0:5] and line[tl - 2:tl] == srch[tr - 2:tr]:
+                temp.append(
+                    linet)  # тут сохраним ввиде списка значения температуры за все годы соответствующие времени.
+
+
+# end_data() - рассчитывает среднюю температуру и ее СКО по ГОСТу. Выводит полученные значения.
+# результат - Выводит рассчитанные значения удобном для восприятия пользователем формате.
+def end_data():
+    a = temp
+    s = 0
+    sko = 0
+    for i in a:
+        s = s + int(i)
+        dl = s / len(a)
+        sko = sko + (int(i) - dl) ** 2
+        sko = (sko / len(a)) ** (1 / 2)
+
+    print("сегодня в Tуле", round(dl), "+/-", round(sko), "градусов цельсия")
+
+
+# Начало
+
+Verifdate()
+VerifTime()
+srch = (Gdate + " " + Gh)
+print(srch)
+read_data(srch)
+end_data()
+
+
+
